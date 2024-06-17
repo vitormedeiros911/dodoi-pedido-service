@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { v4 as uuid } from 'uuid';
 
 import { ClientProxyService } from '../client-proxy/client-proxy.service';
+import { FiltrosPedidoDto } from './dto/filtros-pedido.dto';
 import { Pedido } from './schema/pedido.schema';
 
 @Injectable()
@@ -33,5 +34,36 @@ export class PedidoService {
     });
 
     return novoPedido.save();
+  }
+
+  async listarPedidos(filtrosPedidoDto: FiltrosPedidoDto) {
+    const { idCliente, idFarmacia, idEntregador, status, skip, limit } =
+      filtrosPedidoDto;
+
+    const query = this.pedidoModel.find();
+
+    if (idCliente) query.where('idCliente').equals(idCliente);
+
+    if (idFarmacia) query.where('idFarmacia').equals(idFarmacia);
+
+    if (idEntregador) query.where('idEntregador').equals(idEntregador);
+
+    if (status) query.where('status').equals(status);
+
+    const countQuery = this.pedidoModel
+      .find(query.getFilter())
+      .countDocuments();
+
+    if (skip) query.skip(skip);
+
+    if (limit) query.limit(limit);
+
+    const pedidos = await query.exec();
+    const total = await countQuery.exec();
+
+    return {
+      total,
+      pedidos,
+    };
   }
 }
