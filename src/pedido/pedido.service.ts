@@ -6,6 +6,7 @@ import { v4 as uuid } from 'uuid';
 
 import { ClientProxyService } from '../client-proxy/client-proxy.service';
 import { FiltrosPedidoDto } from './dto/filtros-pedido.dto';
+import { StatusPedidoEnum } from './enum/status-pedido.enum';
 import { Pedido } from './schema/pedido.schema';
 
 @Injectable()
@@ -65,5 +66,12 @@ export class PedidoService {
       total,
       pedidos,
     };
+  }
+
+  async aceitarPedido(idPedido: string) {
+    return this.pedidoModel.updateOne(
+      { id: idPedido },
+      { status: StatusPedidoEnum.EM_SEPARACAO },
+    );
   }
 }

@@ -18,4 +18,9 @@ export class PedidoController {
   async listarPedidos(@Payload() filtrosPedidoDto: FiltrosPedidoDto) {
     return this.pedidoService.listarPedidos(filtrosPedidoDto);
   }
+
+  @EventPattern('aceitar-pedido')
+  async aceitarPedido(@Payload() idPedido: string) {
+    return this.pedidoService.aceitarPedido(idPedido);
+  }
 }
