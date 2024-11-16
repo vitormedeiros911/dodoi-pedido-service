@@ -46,6 +46,9 @@ export class Pedido {
     type: [{ idProduto: String, quantidade: Number, precoUnitario: Number }],
   })
   itens: IItem[];
+
+  @Prop({ required: false })
+  observacao: string;
 }
 
 export const PedidoSchema = SchemaFactory.createForClass(Pedido);
