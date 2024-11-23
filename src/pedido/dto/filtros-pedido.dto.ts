@@ -1,5 +1,5 @@
 export class FiltrosPedidoDto {
-  idCliente?: string;
+  idComprador?: string;
   idFarmacia?: string;
   idEntregador?: string;
   status?: string;

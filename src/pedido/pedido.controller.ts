@@ -1,17 +1,17 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 
+import { CriarPedidoDto } from './dto/criar-pedido.dto';
 import { FiltrosPedidoDto } from './dto/filtros-pedido.dto';
 import { PedidoService } from './pedido.service';
-import { Pedido } from './schema/pedido.schema';
 
 @Controller('pedido')
 export class PedidoController {
   constructor(private readonly pedidoService: PedidoService) {}
 
   @EventPattern('criar-pedido')
-  async criarPedido(@Payload() pedido: Pedido) {
-    return this.pedidoService.criarPedido(pedido);
+  async criarPedido(@Payload() criarPedidoDto: CriarPedidoDto) {
+    return this.pedidoService.criarPedido(criarPedidoDto);
   }
 
   @EventPattern('listar-pedidos')

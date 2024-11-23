@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { v4 as uuid } from 'uuid';
 
 import { ClientProxyService } from '../client-proxy/client-proxy.service';
+import { CriarPedidoDto } from './dto/criar-pedido.dto';
 import { FiltrosPedidoDto } from './dto/filtros-pedido.dto';
 import { StatusPedidoEnum } from './enum/status-pedido.enum';
 import { Pedido } from './schema/pedido.schema';
@@ -19,31 +20,32 @@ export class PedidoService {
   private clientUsuarioBackend =
     this.clientProxyService.getClientProxyUsuarioServiceInstance();
 
-  async criarPedido(pedido: Pedido): Promise<Pedido> {
+  async criarPedido(criarPedidoDto: CriarPedidoDto): Promise<Pedido> {
     const usuario = await firstValueFrom(
       this.clientUsuarioBackend.send(
         'buscar-endereco-por-id-usuario',
-        pedido.idCliente,
+        criarPedidoDto.idComprador,
       ),
     );
 
-    pedido.endereco = usuario.endereco;
+    const enderecoEntrega = `${usuario.rua}, ${usuario.numero}, ${usuario.bairro}, ${usuario.cidade}, ${usuario.estado}, ${usuario.cep}`;
 
     const novoPedido = new this.pedidoModel({
       id: uuid(),
-      ...pedido,
+      enderecoEntrega,
+      ...criarPedidoDto,
     });
 
     return novoPedido.save();
   }
 
   async listarPedidos(filtrosPedidoDto: FiltrosPedidoDto) {
-    const { idCliente, idFarmacia, idEntregador, status, skip, limit } =
+    const { idComprador, idFarmacia, idEntregador, status, skip, limit } =
       filtrosPedidoDto;
 
     const query = this.pedidoModel.find();
 
-    if (idCliente) query.where('idCliente').equals(idCliente);
+    if (idComprador) query.where('idComprador').equals(idComprador);
 
     if (idFarmacia) query.where('idFarmacia').equals(idFarmacia);
 
