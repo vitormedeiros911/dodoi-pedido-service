@@ -76,4 +76,11 @@ export class PedidoService {
       { status: StatusPedidoEnum.EM_SEPARACAO },
     );
   }
+
+  async atualizarPedidoPago(idPagamento: string) {
+    await this.pedidoModel.updateOne(
+      { idPagamento },
+      { status: StatusPedidoEnum.PENDENTE },
+    );
+  }
 }

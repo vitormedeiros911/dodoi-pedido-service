@@ -14,6 +14,11 @@ export class PedidoController {
     return this.pedidoService.criarPedido(criarPedidoDto);
   }
 
+  @EventPattern('atualizar-pedido-pago')
+  async atualizarPedidoPago(@Payload() idPagamento: string) {
+    return this.pedidoService.atualizarPedidoPago(idPagamento);
+  }
+
   @EventPattern('listar-pedidos')
   async listarPedidos(@Payload() filtrosPedidoDto: FiltrosPedidoDto) {
     return this.pedidoService.listarPedidos(filtrosPedidoDto);
