@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 
+import { formatStatusPedido } from '../shared/functions/formatStatusPedido';
 import { CriarPedidoDto } from './dto/criar-pedido.dto';
 import { FiltrosPedidoDto } from './dto/filtros-pedido.dto';
 import { PedidoService } from './pedido.service';
@@ -21,7 +22,19 @@ export class PedidoController {
 
   @EventPattern('listar-pedidos')
   async listarPedidos(@Payload() filtrosPedidoDto: FiltrosPedidoDto) {
-    return this.pedidoService.listarPedidos(filtrosPedidoDto);
+    const { pedidos, total } =
+      await this.pedidoService.listarPedidos(filtrosPedidoDto);
+
+    const pedidosAtualizados = pedidos.map((pedido) => {
+      return {
+        id: pedido.id,
+        total: pedido.total,
+        status: formatStatusPedido(pedido.status),
+        createdAt: pedido.createdAt,
+      };
+    });
+
+    return { pedidos: pedidosAtualizados, total };
   }
 
   @EventPattern('aceitar-pedido')

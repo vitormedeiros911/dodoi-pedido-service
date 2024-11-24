@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 import { StatusPedidoEnum } from '../enum/status-pedido.enum';
+import { IFarmacia } from '../interfaces/farmacia.interface';
 import { IItem } from '../interfaces/item.interface';
 
 @Schema({ timestamps: true, collection: 'pedidos' })
@@ -8,16 +9,24 @@ export class Pedido {
   @Prop({ required: true })
   id: string;
 
+  @Prop({ required: false })
+  codigo: string;
+
   @Prop({ required: true })
   idComprador: string;
 
-  @Prop({ required: false })
-  idFarmacia: string;
+  @Prop({
+    type: {
+      id: { type: String, required: false },
+      nome: { type: String, required: false },
+    },
+  })
+  farmacia: IFarmacia;
 
   @Prop({ required: false })
   idEntregador: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   enderecoEntrega: string;
 
   @Prop({ required: true })
@@ -37,6 +46,12 @@ export class Pedido {
 
   @Prop({ required: true })
   idPagamento: string;
+
+  @Prop()
+  createdAt: Date;
+
+  @Prop()
+  updatedAt: Date;
 }
 
 export const PedidoSchema = SchemaFactory.createForClass(Pedido);
