@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { StatusPedidoEnum } from '../enum/status-pedido.enum';
 import { IFarmacia } from '../interfaces/farmacia.interface';
 import { IItem } from '../interfaces/item.interface';
+import { IEndereco } from '../interfaces/endereco.interface';
 
 @Schema({ timestamps: true, collection: 'pedidos' })
 export class Pedido {
@@ -26,8 +27,19 @@ export class Pedido {
   @Prop({ required: false })
   idEntregador: string;
 
-  @Prop({ required: false })
-  enderecoEntrega: string;
+  @Prop({
+    type: {
+      logradouro: { type: String, required: false },
+      numero: { type: String, required: false },
+      complemento: { type: String, required: false },
+      bairro: { type: String, required: false },
+      cidade: { type: String, required: false },
+      uf: { type: String, required: false },
+      cep: { type: String, required: false },
+    },
+    required: false,
+  })
+  endereco: IEndereco;
 
   @Prop({ required: true })
   total: number;

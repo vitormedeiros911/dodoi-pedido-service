@@ -1,3 +1,4 @@
+import { IEndereco } from '../interfaces/endereco.interface';
 import { IItem } from '../interfaces/item.interface';
 
 export class CriarPedidoDto {
@@ -5,4 +6,5 @@ export class CriarPedidoDto {
   idComprador: string;
   itens: IItem[];
   idPagamento: string;
+  endereco: IEndereco;
 }

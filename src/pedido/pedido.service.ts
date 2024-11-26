@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { firstValueFrom } from 'rxjs';
 import { OrderEnum } from 'src/shared/enum/order.enum';
 import { v4 as uuid } from 'uuid';
 
-import { ClientProxyService } from '../client-proxy/client-proxy.service';
-import { IUsuario } from '../shared/interfaces/usuario.interface';
 import { CriarPedidoDto } from './dto/criar-pedido.dto';
 import { FiltrosPedidoDto } from './dto/filtros-pedido.dto';
 import { StatusPedidoEnum } from './enum/status-pedido.enum';
@@ -16,25 +13,11 @@ import { Pedido } from './schema/pedido.schema';
 export class PedidoService {
   constructor(
     @InjectModel('Pedido') private readonly pedidoModel: Model<Pedido>,
-    private readonly clientProxyService: ClientProxyService,
   ) {}
 
-  private clientUsuarioBackend =
-    this.clientProxyService.getClientProxyUsuarioServiceInstance();
-
   async criarPedido(criarPedidoDto: CriarPedidoDto): Promise<Pedido> {
-    const usuario = (await firstValueFrom(
-      this.clientUsuarioBackend.send(
-        'buscar-endereco-por-id-usuario',
-        criarPedidoDto.idComprador,
-      ),
-    )) as IUsuario;
-
-    const enderecoEntrega = `${usuario.endereco.logradouro} ${usuario.endereco.numero} ${usuario.endereco.bairro}, ${usuario.endereco.cidade} - ${usuario.endereco.uf}, ${usuario.endereco.cep}`;
-
     const novoPedido = new this.pedidoModel({
       id: uuid(),
-      enderecoEntrega,
       ...criarPedidoDto,
     });
 
