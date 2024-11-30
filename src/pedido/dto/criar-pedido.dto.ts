@@ -7,4 +7,5 @@ export class CriarPedidoDto {
   itens: IItem[];
   idPagamento: string;
   endereco: IEndereco;
+  idFarmacia: string;
 }
