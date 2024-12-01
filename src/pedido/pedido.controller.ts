@@ -12,12 +12,12 @@ export class PedidoController {
 
   @EventPattern('criar-pedido')
   async criarPedido(@Payload() criarPedidoDto: CriarPedidoDto) {
-    return this.pedidoService.criarPedido(criarPedidoDto);
+    await this.pedidoService.criarPedido(criarPedidoDto);
   }
 
   @EventPattern('atualizar-pedido-pago')
   async atualizarPedidoPago(@Payload() idPagamento: string) {
-    return this.pedidoService.atualizarPedidoPago(idPagamento);
+    await this.pedidoService.atualizarPedidoPago(idPagamento);
   }
 
   @EventPattern('listar-pedidos')
@@ -29,7 +29,9 @@ export class PedidoController {
       return {
         id: pedido.id,
         total: pedido.total,
-        status: formatStatusPedido(pedido.status),
+        status: formatStatusPedido(
+          pedido.historicoStatus[pedido.historicoStatus.length - 1].status,
+        ),
         createdAt: pedido.createdAt,
         codigo: pedido.codigo,
       };

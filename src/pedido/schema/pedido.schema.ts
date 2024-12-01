@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { StatusPedidoEnum } from '../enum/status-pedido.enum';
 import { IEndereco } from '../interfaces/endereco.interface';
 import { IItem } from '../interfaces/item.interface';
+import { IHistoricoStatus } from '../interfaces/historico-status.interface';
 
 @Schema({ timestamps: true, collection: 'pedidos' })
 export class Pedido {
@@ -41,8 +42,22 @@ export class Pedido {
   @Prop({ required: false })
   idCupom: string;
 
-  @Prop({ required: true, default: StatusPedidoEnum.AGUARDANDO_PAGAMENTO })
-  status: string;
+  @Prop({
+    required: true,
+    type: [
+      {
+        status: String,
+        data: Date,
+      },
+    ],
+    default: [
+      {
+        status: StatusPedidoEnum.AGUARDANDO_PAGAMENTO,
+        data: new Date(),
+      },
+    ],
+  })
+  historicoStatus: IHistoricoStatus[];
 
   @Prop({
     required: true,

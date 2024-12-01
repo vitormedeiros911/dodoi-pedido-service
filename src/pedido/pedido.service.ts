@@ -55,7 +55,7 @@ export class PedidoService {
 
     const query = this.pedidoModel
       .find()
-      .select(['id', 'status', 'total', 'createdAt', 'codigo']);
+      .select(['id', 'historicoStatus', 'total', 'createdAt', 'codigo']);
 
     if (idComprador) query.where('idComprador').equals(idComprador);
 
@@ -63,7 +63,10 @@ export class PedidoService {
 
     if (idEntregador) query.where('idEntregador').equals(idEntregador);
 
-    if (status) query.where('status').equals(status);
+    if (status)
+      query.where({
+        'historicoStatus.status': { $in: status },
+      });
 
     if (order && orderBy)
       query.sort({ [orderBy]: order === OrderEnum.ASC ? 'asc' : 'desc' });
@@ -86,16 +89,36 @@ export class PedidoService {
   }
 
   async aceitarPedido(idPedido: string) {
+    const pedido = await this.pedidoModel.findOne({ id: idPedido });
+
     await this.pedidoModel.updateOne(
       { id: idPedido },
-      { status: StatusPedidoEnum.EM_SEPARACAO },
+      {
+        historicoStatus: [
+          ...pedido.historicoStatus,
+          {
+            status: StatusPedidoEnum.EM_SEPARACAO,
+            data: new Date(),
+          },
+        ],
+      },
     );
   }
 
   async atualizarPedidoPago(idPagamento: string) {
+    const pedido = await this.pedidoModel.findOne({ idPagamento });
+
     await this.pedidoModel.updateOne(
-      { idPagamento },
-      { status: StatusPedidoEnum.PENDENTE },
+      { id: pedido.id },
+      {
+        historicoStatus: [
+          ...pedido.historicoStatus,
+          {
+            status: StatusPedidoEnum.PENDENTE,
+            data: new Date(),
+          },
+        ],
+      },
     );
   }
 
@@ -106,7 +129,10 @@ export class PedidoService {
   async cancelarPedido(idPedido: string) {
     const pedido = await this.pedidoModel.findOne({ id: idPedido });
 
-    if (pedido.status === StatusPedidoEnum.AGUARDANDO_PAGAMENTO) {
+    const ultimoStatus =
+      pedido.historicoStatus[pedido.historicoStatus.length - 1];
+
+    if (ultimoStatus.status === StatusPedidoEnum.AGUARDANDO_PAGAMENTO) {
       await this.pedidoModel.deleteOne({ id: idPedido });
     } else {
       await this.pedidoModel.updateOne(
@@ -114,24 +140,34 @@ export class PedidoService {
         { status: StatusPedidoEnum.CANCELADO },
       );
 
-      for (const item of pedido.itens) {
-        this.clientProdutoBackend.emit('aumentar-estoque', {
-          idProduto: item.idProduto,
-          quantidade: item.quantidade,
-        });
-      }
-
       this.clientPagamentoBackend.emit(
         'estornar-pagamento',
         pedido.idPagamento,
       );
     }
+
+    for (const item of pedido.itens) {
+      this.clientProdutoBackend.emit('aumentar-estoque', {
+        idProduto: item.idProduto,
+        quantidade: item.quantidade,
+      });
+    }
   }
 
   async iniciarEntrega(idPedido: string) {
+    const pedido = await this.pedidoModel.findOne({ id: idPedido });
+
     await this.pedidoModel.updateOne(
       { id: idPedido },
-      { status: StatusPedidoEnum.ENVIADO },
+      {
+        historicoStatus: [
+          ...pedido.historicoStatus,
+          {
+            status: StatusPedidoEnum.ENVIADO,
+            data: new Date(),
+          },
+        ],
+      },
     );
   }
 }
