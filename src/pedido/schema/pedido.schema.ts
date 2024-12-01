@@ -46,7 +46,15 @@ export class Pedido {
 
   @Prop({
     required: true,
-    type: [{ idProduto: String, quantidade: Number, precoUnitario: Number }],
+    type: [
+      {
+        idProduto: String,
+        quantidade: Number,
+        precoUnitario: Number,
+        nomeProduto: String,
+        urlImagem: String,
+      },
+    ],
   })
   itens: IItem[];
 

@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { OrderEnum } from 'src/shared/enum/order.enum';
 import { v4 as uuid } from 'uuid';
 
+import { ClientProxyService } from '../client-proxy/client-proxy.service';
 import { CriarPedidoDto } from './dto/criar-pedido.dto';
 import { FiltrosPedidoDto } from './dto/filtros-pedido.dto';
 import { StatusPedidoEnum } from './enum/status-pedido.enum';
@@ -13,7 +14,11 @@ import { Pedido } from './schema/pedido.schema';
 export class PedidoService {
   constructor(
     @InjectModel('Pedido') private readonly pedidoModel: Model<Pedido>,
+    private readonly clientProxyService: ClientProxyService,
   ) {}
+
+  private clientProdutoBackend =
+    this.clientProxyService.getClientProxyProdutoServiceInstance();
 
   async criarPedido(criarPedidoDto: CriarPedidoDto): Promise<Pedido> {
     const novoPedido = new this.pedidoModel({
@@ -22,6 +27,13 @@ export class PedidoService {
         Date.now().toString().slice(-5) + uuid().slice(-5).toLocaleUpperCase(),
       ...criarPedidoDto,
     });
+
+    for (const item of criarPedidoDto.itens) {
+      this.clientProdutoBackend.emit('reduzir-estoque', {
+        idProduto: item.idProduto,
+        quantidade: item.quantidade,
+      });
+    }
 
     return novoPedido.save();
   }
@@ -82,5 +94,9 @@ export class PedidoService {
       { idPagamento },
       { status: StatusPedidoEnum.PENDENTE },
     );
+  }
+
+  async buscarPedidoPorId(idPedido: string) {
+    return this.pedidoModel.findOne({ id: idPedido });
   }
 }

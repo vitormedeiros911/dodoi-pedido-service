@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { EventPattern, Payload } from '@nestjs/microservices';
+import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 
 import { formatStatusPedido } from '../shared/functions/formatStatusPedido';
 import { CriarPedidoDto } from './dto/criar-pedido.dto';
@@ -41,5 +41,10 @@ export class PedidoController {
   @EventPattern('aceitar-pedido')
   async aceitarPedido(@Payload() idPedido: string) {
     return this.pedidoService.aceitarPedido(idPedido);
+  }
+
+  @MessagePattern('buscar-pedido-por-id')
+  async buscarPedidoPorId(@Payload() idPedido: string) {
+    return this.pedidoService.buscarPedidoPorId(idPedido);
   }
 }

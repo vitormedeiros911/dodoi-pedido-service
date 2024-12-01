@@ -21,4 +21,14 @@ export class ClientProxyService {
       },
     });
   }
+
+  getClientProxyProdutoServiceInstance(): ClientProxy {
+    return ClientProxyFactory.create({
+      transport: Transport.RMQ,
+      options: {
+        urls: [this.url],
+        queue: 'produtos',
+      },
+    });
+  }
 }
