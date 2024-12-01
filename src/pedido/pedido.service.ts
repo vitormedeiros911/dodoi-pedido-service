@@ -18,6 +18,8 @@ export class PedidoService {
   async criarPedido(criarPedidoDto: CriarPedidoDto): Promise<Pedido> {
     const novoPedido = new this.pedidoModel({
       id: uuid(),
+      codigo:
+        Date.now().toString().slice(-5) + uuid().slice(-5).toLocaleUpperCase(),
       ...criarPedidoDto,
     });
 
@@ -38,7 +40,7 @@ export class PedidoService {
 
     const query = this.pedidoModel
       .find()
-      .select(['id', 'status', 'total', 'createdAt']);
+      .select(['id', 'status', 'total', 'createdAt', 'codigo']);
 
     if (idComprador) query.where('idComprador').equals(idComprador);
 

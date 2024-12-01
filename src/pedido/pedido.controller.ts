@@ -31,6 +31,7 @@ export class PedidoController {
         total: pedido.total,
         status: formatStatusPedido(pedido.status),
         createdAt: pedido.createdAt,
+        codigo: pedido.codigo,
       };
     });
 
