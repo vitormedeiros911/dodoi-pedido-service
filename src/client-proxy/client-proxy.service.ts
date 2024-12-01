@@ -31,4 +31,14 @@ export class ClientProxyService {
       },
     });
   }
+
+  getClientProxyPagamentoServiceInstance(): ClientProxy {
+    return ClientProxyFactory.create({
+      transport: Transport.RMQ,
+      options: {
+        urls: [this.url],
+        queue: 'pagamentos',
+      },
+    });
+  }
 }

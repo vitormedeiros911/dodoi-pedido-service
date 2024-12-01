@@ -40,11 +40,21 @@ export class PedidoController {
 
   @EventPattern('aceitar-pedido')
   async aceitarPedido(@Payload() idPedido: string) {
-    return this.pedidoService.aceitarPedido(idPedido);
+    await this.pedidoService.aceitarPedido(idPedido);
   }
 
   @MessagePattern('buscar-pedido-por-id')
   async buscarPedidoPorId(@Payload() idPedido: string) {
     return this.pedidoService.buscarPedidoPorId(idPedido);
+  }
+
+  @EventPattern('cancelar-pedido')
+  async cancelarPedido(@Payload() idPedido: string) {
+    await this.pedidoService.cancelarPedido(idPedido);
+  }
+
+  @EventPattern('iniciar-entrega')
+  async iniciarEntrega(@Payload() idPedido: string) {
+    await this.pedidoService.iniciarEntrega(idPedido);
   }
 }

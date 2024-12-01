@@ -20,6 +20,9 @@ export class PedidoService {
   private clientProdutoBackend =
     this.clientProxyService.getClientProxyProdutoServiceInstance();
 
+  private clientPagamentoBackend =
+    this.clientProxyService.getClientProxyPagamentoServiceInstance();
+
   async criarPedido(criarPedidoDto: CriarPedidoDto): Promise<Pedido> {
     const novoPedido = new this.pedidoModel({
       id: uuid(),
@@ -83,7 +86,7 @@ export class PedidoService {
   }
 
   async aceitarPedido(idPedido: string) {
-    return this.pedidoModel.updateOne(
+    await this.pedidoModel.updateOne(
       { id: idPedido },
       { status: StatusPedidoEnum.EM_SEPARACAO },
     );
@@ -98,5 +101,37 @@ export class PedidoService {
 
   async buscarPedidoPorId(idPedido: string) {
     return this.pedidoModel.findOne({ id: idPedido });
+  }
+
+  async cancelarPedido(idPedido: string) {
+    const pedido = await this.pedidoModel.findOne({ id: idPedido });
+
+    if (pedido.status === StatusPedidoEnum.AGUARDANDO_PAGAMENTO) {
+      await this.pedidoModel.deleteOne({ id: idPedido });
+    } else {
+      await this.pedidoModel.updateOne(
+        { id: idPedido },
+        { status: StatusPedidoEnum.CANCELADO },
+      );
+
+      for (const item of pedido.itens) {
+        this.clientProdutoBackend.emit('aumentar-estoque', {
+          idProduto: item.idProduto,
+          quantidade: item.quantidade,
+        });
+      }
+
+      this.clientPagamentoBackend.emit(
+        'estornar-pagamento',
+        pedido.idPagamento,
+      );
+    }
+  }
+
+  async iniciarEntrega(idPedido: string) {
+    await this.pedidoModel.updateOne(
+      { id: idPedido },
+      { status: StatusPedidoEnum.ENVIADO },
+    );
   }
 }
