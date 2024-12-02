@@ -109,7 +109,7 @@ export class PedidoService {
 
     this.clientNotificacaoBackend.emit('send-notification', {
       titulo: 'Pedido Aceito',
-      mensagem: `Seu pedido ${pedido.codigo} está em separação.`,
+      mensagem: `Seu pedido #${pedido.codigo} está em separação.`,
       tagKey: 'idUsuario',
       tagValue: pedido.idComprador,
     });
