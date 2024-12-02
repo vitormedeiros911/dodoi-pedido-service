@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { OrderEnum } from 'src/shared/enum/order.enum';
 import { v4 as uuid } from 'uuid';
 
 import { ClientProxyService } from '../client-proxy/client-proxy.service';
+import { OrderEnum } from '../shared/enum/order.enum';
 import { CriarPedidoDto } from './dto/criar-pedido.dto';
 import { FiltrosPedidoDto } from './dto/filtros-pedido.dto';
 import { StatusPedidoEnum } from './enum/status-pedido.enum';
@@ -22,6 +22,9 @@ export class PedidoService {
 
   private clientPagamentoBackend =
     this.clientProxyService.getClientProxyPagamentoServiceInstance();
+
+  private clientNotificacaoBackend =
+    this.clientProxyService.getClientProxyNotificacaoServiceInstance();
 
   async criarPedido(criarPedidoDto: CriarPedidoDto): Promise<Pedido> {
     const novoPedido = new this.pedidoModel({
@@ -103,6 +106,13 @@ export class PedidoService {
         ],
       },
     );
+
+    this.clientNotificacaoBackend.emit('send-notification', {
+      titulo: 'Pedido Aceito',
+      mensagem: `Seu pedido ${pedido.codigo} está em separação.`,
+      tagKey: 'idUsuario',
+      tagValue: pedido.idComprador,
+    });
   }
 
   async atualizarPedidoPago(idPagamento: string) {
@@ -120,6 +130,20 @@ export class PedidoService {
         ],
       },
     );
+
+    this.clientNotificacaoBackend.emit('send-notification', {
+      titulo: 'Pagamento Aprovado',
+      mensagem: `O pagamento do pedido #${pedido.codigo} foi aprovado.`,
+      tagKey: 'idUsuario',
+      tagValue: pedido.idComprador,
+    });
+
+    this.clientNotificacaoBackend.emit('send-notification', {
+      titulo: 'Novo Pedido',
+      mensagem: `Você tem um novo pedido #${pedido.codigo}.`,
+      tagKey: 'idFarmacia',
+      tagValue: pedido.idFarmacia,
+    });
   }
 
   async buscarPedidoPorId(idPedido: string) {
@@ -152,6 +176,13 @@ export class PedidoService {
         quantidade: item.quantidade,
       });
     }
+
+    this.clientNotificacaoBackend.emit('send-notification', {
+      titulo: 'Pedido Cancelado',
+      mensagem: `O pedido #${pedido.codigo} foi cancelado.`,
+      tagKey: 'idUsuario',
+      tagValue: pedido.idComprador,
+    });
   }
 
   async iniciarEntrega(idPedido: string) {
@@ -169,5 +200,36 @@ export class PedidoService {
         ],
       },
     );
+
+    this.clientNotificacaoBackend.emit('send-notification', {
+      titulo: 'Pedido Enviado',
+      mensagem: `O seu pedido #${pedido.codigo} foi enviado e logo chega ai.`,
+      tagKey: 'idUsuario',
+      tagValue: pedido.idComprador,
+    });
+  }
+
+  async pedidoEntregue(idPedido: string) {
+    const pedido = await this.pedidoModel.findOne({ id: idPedido });
+
+    await this.pedidoModel.updateOne(
+      { id: idPedido },
+      {
+        historicoStatus: [
+          ...pedido.historicoStatus,
+          {
+            status: StatusPedidoEnum.ENTREGUE,
+            data: new Date(),
+          },
+        ],
+      },
+    );
+
+    this.clientNotificacaoBackend.emit('send-notification', {
+      titulo: 'Pedido Entregue',
+      mensagem: `O seu pedido #${pedido.codigo} foi entregue.`,
+      tagKey: 'idUsuario',
+      tagValue: pedido.idComprador,
+    });
   }
 }

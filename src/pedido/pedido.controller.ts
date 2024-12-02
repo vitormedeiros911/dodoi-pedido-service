@@ -59,4 +59,9 @@ export class PedidoController {
   async iniciarEntrega(@Payload() idPedido: string) {
     await this.pedidoService.iniciarEntrega(idPedido);
   }
+
+  @EventPattern('pedido-entregue')
+  async pedidoEntregue(@Payload() idPedido: string) {
+    await this.pedidoService.pedidoEntregue(idPedido);
+  }
 }
