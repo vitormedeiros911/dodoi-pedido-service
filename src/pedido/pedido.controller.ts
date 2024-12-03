@@ -60,8 +60,8 @@ export class PedidoController {
     await this.pedidoService.iniciarEntrega(idPedido);
   }
 
-  @EventPattern('pedido-entregue')
-  async pedidoEntregue(@Payload() idPedido: string) {
-    await this.pedidoService.pedidoEntregue(idPedido);
+  @EventPattern('finalizar-entrega')
+  async finalizarEntrega(@Payload() idPedido: string) {
+    await this.pedidoService.finalizarEntrega(idPedido);
   }
 }

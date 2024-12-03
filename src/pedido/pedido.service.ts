@@ -108,7 +108,7 @@ export class PedidoService {
     );
 
     this.clientNotificacaoBackend.emit('send-notification', {
-      titulo: 'Pedido Aceito',
+      titulo: 'Pedido aceito',
       mensagem: `Seu pedido #${pedido.codigo} está em separação.`,
       tagKey: 'idUsuario',
       tagValue: pedido.idComprador,
@@ -132,14 +132,14 @@ export class PedidoService {
     );
 
     this.clientNotificacaoBackend.emit('send-notification', {
-      titulo: 'Pagamento Aprovado',
+      titulo: 'Pagamento aprovado',
       mensagem: `O pagamento do pedido #${pedido.codigo} foi aprovado.`,
       tagKey: 'idUsuario',
       tagValue: pedido.idComprador,
     });
 
     this.clientNotificacaoBackend.emit('send-notification', {
-      titulo: 'Novo Pedido',
+      titulo: 'Novo pedido',
       mensagem: `Você tem um novo pedido #${pedido.codigo}.`,
       tagKey: 'idFarmacia',
       tagValue: pedido.idFarmacia,
@@ -178,7 +178,7 @@ export class PedidoService {
     }
 
     this.clientNotificacaoBackend.emit('send-notification', {
-      titulo: 'Pedido Cancelado',
+      titulo: 'Pedido cancelado',
       mensagem: `O pedido #${pedido.codigo} foi cancelado.`,
       tagKey: 'idUsuario',
       tagValue: pedido.idComprador,
@@ -202,14 +202,14 @@ export class PedidoService {
     );
 
     this.clientNotificacaoBackend.emit('send-notification', {
-      titulo: 'Pedido Enviado',
-      mensagem: `O seu pedido #${pedido.codigo} foi enviado e logo chega ai.`,
+      titulo: 'Pedido enviado',
+      mensagem: `O seu pedido #${pedido.codigo} foi enviado!`,
       tagKey: 'idUsuario',
       tagValue: pedido.idComprador,
     });
   }
 
-  async pedidoEntregue(idPedido: string) {
+  async finalizarEntrega(idPedido: string) {
     const pedido = await this.pedidoModel.findOne({ id: idPedido });
 
     await this.pedidoModel.updateOne(
@@ -226,10 +226,17 @@ export class PedidoService {
     );
 
     this.clientNotificacaoBackend.emit('send-notification', {
-      titulo: 'Pedido Entregue',
+      titulo: 'Pedido entregue',
       mensagem: `O seu pedido #${pedido.codigo} foi entregue.`,
       tagKey: 'idUsuario',
       tagValue: pedido.idComprador,
+    });
+
+    this.clientNotificacaoBackend.emit('send-notification', {
+      titulo: 'Pedido entregue',
+      mensagem: `O pedido #${pedido.codigo} foi entregue.`,
+      tagKey: 'idFarmacia',
+      tagValue: pedido.idFarmacia,
     });
   }
 }
