@@ -58,32 +58,47 @@ export class PedidoService {
     const { idComprador, idFarmacia, status, skip, limit, order, orderBy } =
       filtrosPedidoDto;
 
-    const query = this.pedidoModel
-      .find()
-      .select(['id', 'historicoStatus', 'total', 'createdAt', 'codigo']);
+    const pipeline = [];
 
-    if (idComprador) query.where('idComprador').equals(idComprador);
+    if (idComprador) pipeline.push({ $match: { idComprador } });
 
-    if (idFarmacia) query.where('idFarmacia').equals(idFarmacia);
+    if (idFarmacia) pipeline.push({ $match: { idFarmacia } });
 
-    if (status)
-      query.where({
-        'historicoStatus.status': { $in: status },
+    if (status) {
+      pipeline.push({
+        $project: {
+          id: 1,
+          historicoStatus: { $arrayElemAt: ['$historicoStatus', -1] },
+          total: 1,
+          createdAt: 1,
+          codigo: 1,
+        },
       });
 
+      pipeline.push({
+        $match: {
+          'historicoStatus.status': { $in: status },
+        },
+      });
+    }
+
     if (order && orderBy)
-      query.sort({ [orderBy]: order === OrderEnum.ASC ? 'asc' : 'desc' });
+      pipeline.push({
+        $sort: { [orderBy]: order === OrderEnum.ASC ? 1 : -1 },
+      });
 
-    const countQuery = this.pedidoModel
-      .find(query.getFilter())
-      .countDocuments();
+    if (skip) pipeline.push({ $skip: skip });
 
-    if (skip) query.skip(skip);
+    if (limit) pipeline.push({ $limit: limit });
 
-    if (limit) query.limit(limit);
+    const pedidos = await this.pedidoModel.aggregate(pipeline);
 
-    const pedidos = await query.exec();
-    const total = await countQuery.exec();
+    const countQuery = this.pedidoModel.aggregate(
+      pipeline.concat([{ $count: 'total' }]),
+    );
+
+    const total =
+      (await countQuery).length > 0 ? (await countQuery)[0].total : 0;
 
     return {
       total,

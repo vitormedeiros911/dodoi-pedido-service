@@ -75,7 +75,8 @@ export class PedidoController {
           id: pedido.id,
           total: pedido.total,
           status: formatStatusPedido(
-            pedido.historicoStatus[pedido.historicoStatus.length - 1].status,
+            pedido.historicoStatus.status ||
+              pedido.historicoStatus[pedido.historicoStatus.length - 1].status,
           ),
           createdAt: pedido.createdAt,
           codigo: pedido.codigo,
