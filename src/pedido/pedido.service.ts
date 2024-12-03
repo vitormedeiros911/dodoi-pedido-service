@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
-import { formatEnderecoToString } from 'src/shared/functions/formatEnderecoToString';
-import { IUsuario } from 'src/shared/interfaces/usuario.interface';
 import { v4 as uuid } from 'uuid';
 
 import { ClientProxyService } from '../client-proxy/client-proxy.service';
 import { OrderEnum } from '../shared/enum/order.enum';
+import { formatEnderecoToString } from '../shared/functions/formatEnderecoToString';
+import { IUsuario } from '../shared/interfaces/usuario.interface';
 import { CriarPedidoDto } from './dto/criar-pedido.dto';
 import { FiltrosPedidoDto } from './dto/filtros-pedido.dto';
 import { StatusPedidoEnum } from './enum/status-pedido.enum';
@@ -55,16 +55,8 @@ export class PedidoService {
   }
 
   async listarPedidos(filtrosPedidoDto: FiltrosPedidoDto) {
-    const {
-      idComprador,
-      idFarmacia,
-      idEntregador,
-      status,
-      skip,
-      limit,
-      order,
-      orderBy,
-    } = filtrosPedidoDto;
+    const { idComprador, idFarmacia, status, skip, limit, order, orderBy } =
+      filtrosPedidoDto;
 
     const query = this.pedidoModel
       .find()
@@ -73,8 +65,6 @@ export class PedidoService {
     if (idComprador) query.where('idComprador').equals(idComprador);
 
     if (idFarmacia) query.where('idFarmacia').equals(idFarmacia);
-
-    if (idEntregador) query.where('idEntregador').equals(idEntregador);
 
     if (status)
       query.where({
@@ -195,7 +185,15 @@ export class PedidoService {
     } else {
       await this.pedidoModel.updateOne(
         { id: idPedido },
-        { status: StatusPedidoEnum.CANCELADO },
+        {
+          historicoStatus: [
+            ...pedido.historicoStatus,
+            {
+              status: StatusPedidoEnum.CANCELADO,
+              data: new Date(),
+            },
+          ],
+        },
       );
 
       this.clientPagamentoBackend.emit(

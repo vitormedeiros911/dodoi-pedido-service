@@ -19,9 +19,6 @@ export class Pedido {
   @Prop({ required: true })
   idFarmacia: string;
 
-  @Prop({ required: false })
-  idEntregador: string;
-
   @Prop({
     type: {
       logradouro: { type: String, required: false },
