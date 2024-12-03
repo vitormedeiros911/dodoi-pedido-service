@@ -212,6 +212,13 @@ export class PedidoService {
     this.clientNotificacaoBackend.emit('send-notification', {
       titulo: 'Pedido cancelado',
       mensagem: `O pedido #${pedido.codigo} foi cancelado.`,
+      tagKey: 'idFarmacia',
+      tagValue: pedido.idFarmacia,
+    });
+
+    this.clientNotificacaoBackend.emit('send-notification', {
+      titulo: 'Pedido cancelado',
+      mensagem: `O seu pedido #${pedido.codigo} foi cancelado.`,
       tagKey: 'idUsuario',
       tagValue: pedido.idComprador,
     });
