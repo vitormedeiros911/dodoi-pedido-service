@@ -1,6 +1,7 @@
 export interface IUsuario {
   id: string;
   nome: string;
+  telefone: string;
   endereco: {
     logradouro: string;
     numero: string;

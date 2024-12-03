@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { firstValueFrom } from 'rxjs';
 import { v4 as uuid } from 'uuid';
 
 import { ClientProxyService } from '../client-proxy/client-proxy.service';
@@ -9,6 +10,7 @@ import { CriarPedidoDto } from './dto/criar-pedido.dto';
 import { FiltrosPedidoDto } from './dto/filtros-pedido.dto';
 import { StatusPedidoEnum } from './enum/status-pedido.enum';
 import { Pedido } from './schema/pedido.schema';
+import { IUsuario } from 'src/shared/interfaces/usuario.interface';
 
 @Injectable()
 export class PedidoService {
@@ -25,6 +27,9 @@ export class PedidoService {
 
   private clientNotificacaoBackend =
     this.clientProxyService.getClientProxyNotificacaoServiceInstance();
+
+  private clientUsuarioBackend =
+    this.clientProxyService.getClientProxyUsuarioServiceInstance();
 
   async criarPedido(criarPedidoDto: CriarPedidoDto): Promise<Pedido> {
     const novoPedido = new this.pedidoModel({
@@ -147,7 +152,23 @@ export class PedidoService {
   }
 
   async buscarPedidoPorId(idPedido: string) {
-    return this.pedidoModel.findOne({ id: idPedido });
+    const pedido = await this.pedidoModel.findOne({ id: idPedido }).exec();
+
+    const cliente: IUsuario = await firstValueFrom(
+      this.clientUsuarioBackend.send(
+        'buscar-contato-usuario',
+        pedido.idComprador,
+      ),
+    );
+
+    return {
+      ...pedido.toJSON(),
+      cliente: {
+        nome: cliente.nome,
+        endereco: `${cliente.endereco.logradouro}, ${cliente.endereco.numero} - ${cliente.endereco.bairro}, ${cliente.endereco.cidade} - ${cliente.endereco.uf} - ${cliente.endereco.cep}`,
+        telefone: cliente.telefone,
+      },
+    };
   }
 
   async cancelarPedido(idPedido: string) {
