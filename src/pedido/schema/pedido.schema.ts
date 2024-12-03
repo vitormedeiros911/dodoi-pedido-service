@@ -36,9 +36,6 @@ export class Pedido {
   @Prop({ required: true })
   total: number;
 
-  @Prop({ required: false })
-  idCupom: string;
-
   @Prop({
     required: true,
     type: [
