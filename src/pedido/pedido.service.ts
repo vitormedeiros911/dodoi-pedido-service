@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
+import { formatEnderecoToString } from 'src/shared/functions/formatEnderecoToString';
+import { IUsuario } from 'src/shared/interfaces/usuario.interface';
 import { v4 as uuid } from 'uuid';
 
 import { ClientProxyService } from '../client-proxy/client-proxy.service';
@@ -9,8 +11,8 @@ import { OrderEnum } from '../shared/enum/order.enum';
 import { CriarPedidoDto } from './dto/criar-pedido.dto';
 import { FiltrosPedidoDto } from './dto/filtros-pedido.dto';
 import { StatusPedidoEnum } from './enum/status-pedido.enum';
+import { IFarmacia } from './interfaces/farmacia.interface';
 import { Pedido } from './schema/pedido.schema';
-import { IUsuario } from 'src/shared/interfaces/usuario.interface';
 
 @Injectable()
 export class PedidoService {
@@ -30,6 +32,9 @@ export class PedidoService {
 
   private clientUsuarioBackend =
     this.clientProxyService.getClientProxyUsuarioServiceInstance();
+
+  private clientFarmaciaBackend =
+    this.clientProxyService.getClientProxyFarmaciaServiceInstance();
 
   async criarPedido(criarPedidoDto: CriarPedidoDto): Promise<Pedido> {
     const novoPedido = new this.pedidoModel({
@@ -161,11 +166,19 @@ export class PedidoService {
       ),
     );
 
+    const farmacia: IFarmacia = await firstValueFrom(
+      this.clientFarmaciaBackend.send(
+        'buscar-farmacia-reduzida',
+        pedido.idFarmacia,
+      ),
+    );
+
     return {
       ...pedido.toJSON(),
+      farmacia,
       cliente: {
         nome: cliente.nome,
-        endereco: `${cliente.endereco.logradouro}, ${cliente.endereco.numero} - ${cliente.endereco.bairro}, ${cliente.endereco.cidade} - ${cliente.endereco.uf} - ${cliente.endereco.cep}`,
+        endereco: formatEnderecoToString(cliente.endereco),
         telefone: cliente.telefone,
       },
     };
@@ -245,13 +258,6 @@ export class PedidoService {
         ],
       },
     );
-
-    this.clientNotificacaoBackend.emit('send-notification', {
-      titulo: 'Pedido entregue',
-      mensagem: `O seu pedido #${pedido.codigo} foi entregue.`,
-      tagKey: 'idUsuario',
-      tagValue: pedido.idComprador,
-    });
 
     this.clientNotificacaoBackend.emit('send-notification', {
       titulo: 'Pedido entregue',

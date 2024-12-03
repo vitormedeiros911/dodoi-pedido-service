@@ -51,4 +51,14 @@ export class ClientProxyService {
       },
     });
   }
+
+  getClientProxyFarmaciaServiceInstance(): ClientProxy {
+    return ClientProxyFactory.create({
+      transport: Transport.RMQ,
+      options: {
+        urls: [this.url],
+        queue: 'farmacias',
+      },
+    });
+  }
 }
